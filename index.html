@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Elmo CANopen Decoder</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">CANopen / DS402</p>
+          <h1>Elmo CAN Decoder</h1>
+        </div>
+        <div class="actions">
+          <label class="file-button">
+            <input id="fileInput" type="file" accept=".log,.txt,.asc,.csv">
+            Загрузить лог
+          </label>
+          <button id="sampleButton" type="button">Пример лога</button>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <aside class="input-panel">
+          <div class="panel-heading">
+            <h2>Входной лог</h2>
+            <button id="decodeButton" type="button">Декодировать</button>
+          </div>
+          <textarea id="logInput" spellcheck="false" placeholder="Вставьте candump, Vector ASC или простой CSV: timestamp id dlc data..."></textarea>
+          <p class="hint">Поддерживаются строки вида candump: <code>(0.001) can0 601#2B40600006000000</code>, ASC и простые записи с ID + байтами.</p>
+        </aside>
+
+        <section class="results">
+          <div class="summary-grid" id="summaryGrid"></div>
+
+          <nav class="tabs" aria-label="Режимы просмотра">
+            <button class="tab active" data-tab="canopen" type="button">CANopen</button>
+            <button class="tab" data-tab="ds402" type="button">DS402</button>
+            <button class="tab" data-tab="raw" type="button">Raw</button>
+          </nav>
+
+          <section class="table-panel active" id="canopenPanel">
+            <div class="panel-heading">
+              <h2>CANopen события</h2>
+              <input id="filterInput" type="search" placeholder="Фильтр по Node, COB-ID, типу">
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Время</th>
+                    <th>COB-ID</th>
+                    <th>Node</th>
+                    <th>Сущность</th>
+                    <th>Расшифровка</th>
+                  </tr>
+                </thead>
+                <tbody id="canopenBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="table-panel" id="ds402Panel">
+            <div class="panel-heading">
+              <h2>DS402</h2>
+              <span id="ds402Status" class="status-chip">Нет данных</span>
+            </div>
+            <div id="driveCards" class="drive-grid"></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Время</th>
+                    <th>Node</th>
+                    <th>Объект</th>
+                    <th>Значение</th>
+                    <th>Смысл</th>
+                  </tr>
+                </thead>
+                <tbody id="ds402Body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="table-panel" id="rawPanel">
+            <div class="panel-heading">
+              <h2>Сырые кадры</h2>
+              <span id="rawCount" class="status-chip">0 кадров</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Время</th>
+                    <th>Канал</th>
+                    <th>ID</th>
+                    <th>DLC</th>
+                    <th>Data</th>
+                  </tr>
+                </thead>
+                <tbody id="rawBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
