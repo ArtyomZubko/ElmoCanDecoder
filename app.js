@@ -99,6 +99,9 @@ function parseLine(line, lineNumber) {
     return frameFromParts(lineNumber, candump[1], candump[2], candump[3], candump[4]);
   }
 
+  const maraphon = parseMaraphonLine(trimmed, lineNumber);
+  if (maraphon) return maraphon;
+
   const compact = trimmed.match(/^(\S+)\s+([0-9A-Fa-f]{1,8})\s+\[?(\d)\]?\s+((?:[0-9A-Fa-f]{2}\s*){0,8})/);
   if (compact) {
     return frameFromParts(lineNumber, compact[1], "can", compact[2], compact[4]);
@@ -122,6 +125,41 @@ function parseLine(line, lineNumber) {
     lineNumber,
     invalid: true,
     text: trimmed,
+  };
+}
+
+function parseMaraphonLine(line, lineNumber) {
+  const parts = line.split(/\s+/);
+  if (parts.length < 7) return null;
+
+  const [direction, sequence, frameType, idText, dlcText, encoding] = parts;
+  if (!/^(RX|TX)$/i.test(direction)) return null;
+  if (!/^\d+$/.test(sequence)) return null;
+  if (!/^(SFF|EFF)$/i.test(frameType)) return null;
+  if (!/^[0-9A-Fa-f]{1,8}$/.test(idText)) return null;
+  if (!/^\d+$/.test(dlcText)) return null;
+  if (encoding.toUpperCase() !== "HEX") return null;
+
+  const dlc = Number(dlcText);
+  const byteParts = parts.slice(6, 6 + dlc);
+  if (byteParts.length !== dlc || !byteParts.every((part) => /^[0-9A-Fa-f]{2}$/.test(part))) {
+    return null;
+  }
+
+  const tickText = parts[6 + dlc];
+  const tickSeconds = /^\d+$/.test(tickText || "") ? Number(tickText) / 1_000_000 : null;
+  const id = parseInt(idText, 16);
+  const idWidth = frameType.toUpperCase() === "EFF" ? 8 : 3;
+
+  return {
+    lineNumber,
+    time: tickSeconds,
+    channel: `${direction.toUpperCase()} ${frameType.toUpperCase()}`,
+    id,
+    idText: hex(id, idWidth),
+    dlc,
+    data: byteParts.map((part) => parseInt(part, 16)),
+    format: "CAN Maraphon",
   };
 }
 
