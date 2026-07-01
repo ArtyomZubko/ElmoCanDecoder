@@ -356,7 +356,7 @@ function render(decoded) {
 
 function renderSummary(decoded, ds402) {
   const valid = decoded.filter((row) => !row.invalid);
-  const nodes = new Set(valid.map((row) => row.nodeId).filter(Boolean));
+  const nodes = new Set(valid.map((row) => row.nodeId).filter((nodeId) => Number.isInteger(nodeId) && nodeId > 0));
   const sdo = valid.filter((row) => row.kind === "SDO").length;
   const pdo = valid.filter((row) => row.tag === "pdo").length;
   els.summaryGrid.innerHTML = [
