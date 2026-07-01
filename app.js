@@ -245,6 +245,7 @@ function decodeEmergency(data) {
 
 function decodeSdo(frame, nodeId, fallbackKind) {
   const data = frame.data;
+  const isServerResponse = frame.id >= 0x580 && frame.id <= 0x5ff;
   const command = data[0] ?? 0;
   const index = (data[1] ?? 0) | ((data[2] ?? 0) << 8);
   const subIndex = data[3] ?? 0;
@@ -270,6 +271,7 @@ function decodeSdo(frame, nodeId, fallbackKind) {
     objectName,
     objectValue: value,
     hasObjectValue,
+    direction: isServerResponse ? "Node -> Master" : "Master -> Node",
     transfer,
   });
 }
@@ -311,6 +313,7 @@ function extractDs402(events) {
     rows.push({
       time: item.time,
       nodeId: item.nodeId,
+      direction: `${item.direction} (${item.transfer})`,
       object: `${item.objectKey} ${item.objectName}`,
       value: formatValue(item.objectKey, item.objectValue, item.data.slice(4)),
       meaning,
@@ -415,11 +418,12 @@ function renderDs402(ds402) {
     ? ds402.rows.map((row) => `<tr>
       <td class="mono">${timeText(row.time)}</td>
       <td>${escapeHtml(String(row.nodeId))}</td>
+      <td>${escapeHtml(row.direction)}</td>
       <td>${escapeHtml(row.object)}</td>
       <td class="mono">${escapeHtml(row.value)}</td>
       <td>${escapeHtml(row.meaning)}</td>
     </tr>`).join("")
-    : `<tr><td class="empty" colspan="5">Нет DS402 событий</td></tr>`;
+    : `<tr><td class="empty" colspan="6">Нет DS402 событий</td></tr>`;
 }
 
 function driveCard(drive) {
